@@ -4,9 +4,12 @@ import cf.hydos.pixelmonassetutils.reader.InternalFileType;
 import cf.hydos.pixelmonassetutils.scene.Scene;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarFile;
+import org.tukaani.xz.XZ;
 import org.tukaani.xz.XZInputStream;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Random;
@@ -50,7 +53,7 @@ public class PixelAsset {
 
     private TarFile getTarFile(Path path) {
         try {
-            return new TarFile(unlockTarFile(new XZInputStream(Files.newInputStream(path)).readAllBytes()));
+            return new TarFile(new XZInputStream(unlockArchive(Files.newInputStream(path).readAllBytes())).readAllBytes());
         } catch (IOException e) {
             throw new RuntimeException("Failed to read file.", e);
         }
@@ -59,7 +62,7 @@ public class PixelAsset {
     /**
      * We change 1 bit to make file readers fail to load the file or find its format. I would rather not have reforged digging through the assets, honestly.
      */
-    private byte[] lockTarFile(byte[] originalBytes) {
+    public static byte[] lockArchive(byte[] originalBytes) {
         originalBytes[0] = (byte) RANDOM.nextInt(0, 255);
         return originalBytes;
     }
@@ -67,8 +70,8 @@ public class PixelAsset {
     /**
      * We change 1 bit to make file readers fail to load the file or find its format. I would rather not have reforged digging through the assets, honestly.
      */
-    private byte[] unlockTarFile(byte[] originalBytes) {
-        originalBytes[0] = (byte) 103; // Fix the magic number
-        return originalBytes;
+    private InputStream unlockArchive(byte[] originalBytes) {
+        System.arraycopy(XZ.HEADER_MAGIC, 0, originalBytes, 0, XZ.HEADER_MAGIC.length);
+        return new ByteArrayInputStream(originalBytes);
     }
 }

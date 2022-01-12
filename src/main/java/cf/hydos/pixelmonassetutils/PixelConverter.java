@@ -25,12 +25,16 @@ public class PixelConverter {
         Path glbFile = Path.of("/home/cope/tmp/formatComparison2/work-out/venusaur-all.glb");
         Path outFile = Path.of("/home/cope/tmp/formatComparison2/work-out/venusaur-all.pk");
 
+        convertToPk(glbFile, outFile);
+    }
+
+    public static void convertToPk(Path glbFile, Path output) {
         try {
-            if (!Files.exists(outFile)) {
-                Files.createFile(outFile);
+            if (!Files.exists(output)) {
+                Files.createFile(output);
             }
 
-            try (OutputStream xz = new XZOutputStream(Files.newOutputStream(outFile), options)) {
+            try (OutputStream xz = new XZOutputStream(Files.newOutputStream(output), options)) {
                 try (TarArchiveOutputStream tar = new TarArchiveOutputStream(xz)) {
                     tar.putArchiveEntry(new TarArchiveEntry(glbFile, glbFile.getFileName().toString()));
                     IOUtils.copy(new BufferedInputStream(Files.newInputStream(glbFile)), tar);
@@ -38,6 +42,10 @@ public class PixelConverter {
                 }
             }
 
+            byte[] lockedBytes = PixelAsset.lockArchive(Files.newInputStream(output).readAllBytes());
+            try (OutputStream out = Files.newOutputStream(output)) {
+                out.write(lockedBytes);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
