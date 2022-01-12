@@ -50,11 +50,11 @@ public class PixelConverter {
         frame.pack();
         frame.setVisible(true);
 
-        PixelAsset asset = new PixelAsset(Path.of("/home/cope/tmp/formatComparison2/work-out/venusaur-all.tar.xz.old"));
+        /*PixelAsset asset = new PixelAsset(Path.of("/home/cope/tmp/formatComparison2/work-out/venusaur-all.tar.xz.old"));
 
         Path glbFile = Path.of("/home/cope/tmp/formatComparison2/work-out/venusaur-all.glb");
         Path outFile = Path.of("/home/cope/tmp/formatComparison2/work-out/venusaur-all.pk");
 
-        convertToPk(glbFile, outFile);
+        convertToPk(glbFile, outFile);*/
     }
 }
