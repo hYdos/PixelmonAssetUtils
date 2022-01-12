@@ -53,7 +53,9 @@ public class PixelAsset {
 
     private TarFile getTarFile(Path path) {
         try {
-            return new TarFile(new XZInputStream(unlockArchive(Files.newInputStream(path).readAllBytes())).readAllBytes());
+            InputStream unlockedInputStream = unlockArchive(Files.newInputStream(path).readAllBytes());
+            XZInputStream xzInputStream = new XZInputStream(unlockedInputStream);
+            return new TarFile(xzInputStream.readAllBytes());
         } catch (IOException e) {
             throw new RuntimeException("Failed to read file.", e);
         }
@@ -63,7 +65,7 @@ public class PixelAsset {
      * We change 1 bit to make file readers fail to load the file or find its format. I would rather not have reforged digging through the assets, honestly.
      */
     public static byte[] lockArchive(byte[] originalBytes) {
-        originalBytes[0] = (byte) RANDOM.nextInt(0, 255);
+        originalBytes[0] = (byte) 6;
         return originalBytes;
     }
 

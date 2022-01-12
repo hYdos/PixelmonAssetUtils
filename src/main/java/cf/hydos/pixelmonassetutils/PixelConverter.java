@@ -6,6 +6,7 @@ import org.apache.commons.compress.utils.IOUtils;
 import org.tukaani.xz.LZMA2Options;
 import org.tukaani.xz.XZOutputStream;
 
+import javax.swing.*;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -18,15 +19,6 @@ import java.nio.file.Path;
 public class PixelConverter {
 
     private static final LZMA2Options options = new LZMA2Options();
-
-    public PixelConverter() {
-        PixelAsset asset = new PixelAsset(Path.of("/home/cope/tmp/formatComparison2/work-out/venusaur-all.pk"));
-
-        Path glbFile = Path.of("/home/cope/tmp/formatComparison2/work-out/venusaur-all.glb");
-        Path outFile = Path.of("/home/cope/tmp/formatComparison2/work-out/venusaur-all.pk");
-
-        convertToPk(glbFile, outFile);
-    }
 
     public static void convertToPk(Path glbFile, Path output) {
         try {
@@ -52,6 +44,17 @@ public class PixelConverter {
     }
 
     public static void main(String[] args) {
-        new PixelConverter();
+        JFrame frame = new JFrame("Pixel Asset Utils");
+        frame.setContentPane(new ConverterGui().root);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.pack();
+        frame.setVisible(true);
+
+        PixelAsset asset = new PixelAsset(Path.of("/home/cope/tmp/formatComparison2/work-out/venusaur-all.tar.xz.old"));
+
+        Path glbFile = Path.of("/home/cope/tmp/formatComparison2/work-out/venusaur-all.glb");
+        Path outFile = Path.of("/home/cope/tmp/formatComparison2/work-out/venusaur-all.pk");
+
+        convertToPk(glbFile, outFile);
     }
 }
