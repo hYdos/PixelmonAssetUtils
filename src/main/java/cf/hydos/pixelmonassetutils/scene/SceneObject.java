@@ -1,7 +1,7 @@
-package cf.hydos.pixelconverter.scene;
+package cf.hydos.pixelmonassetutils.scene;
 
-import cf.hydos.pixelconverter.reader.GlbReader;
-import cf.hydos.pixelconverter.scene.material.Material;
+import cf.hydos.pixelmonassetutils.reader.GlbReader;
+import cf.hydos.pixelmonassetutils.scene.material.Material;
 
 public class SceneObject {
 

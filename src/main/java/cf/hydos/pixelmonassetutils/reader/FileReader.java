@@ -1,6 +1,6 @@
-package cf.hydos.pixelconverter.reader;
+package cf.hydos.pixelmonassetutils.reader;
 
-import cf.hydos.pixelconverter.scene.Scene;
+import cf.hydos.pixelmonassetutils.scene.Scene;
 import org.apache.commons.compress.archivers.tar.TarFile;
 
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package cf.hydos.pixelconverter;
+package cf.hydos.pixelmonassetutils;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;

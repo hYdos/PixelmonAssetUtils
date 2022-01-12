@@ -1,4 +1,4 @@
-package cf.hydos.pixelconverter.scene.material;
+package cf.hydos.pixelmonassetutils.scene.material;
 
 import java.nio.ByteBuffer;
 

@@ -1,7 +1,7 @@
-package cf.hydos.pixelconverter;
+package cf.hydos.pixelmonassetutils;
 
-import cf.hydos.pixelconverter.reader.InternalFileType;
-import cf.hydos.pixelconverter.scene.Scene;
+import cf.hydos.pixelmonassetutils.reader.InternalFileType;
+import cf.hydos.pixelmonassetutils.scene.Scene;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarFile;
 import org.tukaani.xz.XZInputStream;
