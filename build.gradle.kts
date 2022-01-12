@@ -31,6 +31,7 @@ dependencies {
     implementation("org.tukaani", "xz", "1.9")
     implementation("org.apache.commons", "commons-compress", "1.21")
     implementation("org.joml", "joml", "1.10.3")
+    implementation("com.intellij", "forms_rt", "7.0.3")
 
     implementation(platform("org.lwjgl:lwjgl-bom:3.3.0"))
     implementation("org.lwjgl", "lwjgl")
@@ -59,6 +60,8 @@ tasks {
         relocate("org.lwjgl", "$rootPkg.repackage.org.lwjgl")
         relocate("org.joml", "$rootPkg.repackage.org.joml")
         relocate("org.tukaani", "$rootPkg.repackage.org.tukaani")
+        relocate("org.apache.commons", "$rootPkg.repackage.org.apache.commons")
+        relocate("com.intellij", "$rootPkg.repackage.com.intellij")
 
         manifest {
             attributes(mapOf("Main-Class" to "$rootPkg.PixelConverter"))
