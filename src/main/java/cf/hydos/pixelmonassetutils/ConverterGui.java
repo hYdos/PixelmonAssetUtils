@@ -17,6 +17,7 @@ public class ConverterGui {
     private static final Path INPUT_FOLDER = Paths.get("input");
     private static final Path OUTPUT_FOLDER = Paths.get("output");
     public JPanel root;
+    private JProgressBar progress;
     private JButton convertGlbToPkButton;
     private JLabel status;
 
@@ -39,13 +40,16 @@ public class ConverterGui {
 
                 @Override
                 protected String doInBackground() {
-                    for (String inputFile : inputFiles) {
+                    for (int i = 0; i < inputFiles.size(); i++) {
+                        String inputFile = inputFiles.get(i);
                         Path inPath = INPUT_FOLDER.resolve(inputFile + GLB_EXTENSION);
                         Path outPath = OUTPUT_FOLDER.resolve(inputFile + PIXEL_ASSET_EXTENSION);
+
                         System.out.println("Processing file " + inPath);
                         updateStatus("Processing " + inputFile);
+                        progress.setValue(i / inputFiles.size() * 100);
+
                         PixelConverter.convertToPk(inPath, outPath);
-                        System.out.println("Finished!");
                     }
 
                     updateStatus("Finished!");
@@ -79,7 +83,7 @@ public class ConverterGui {
         root = new JPanel();
         root.setLayout(new GridLayoutManager(1, 1, new Insets(10, 10, 10, 10), -1, -1));
         final JPanel panel1 = new JPanel();
-        panel1.setLayout(new GridLayoutManager(3, 1, new Insets(0, 0, 0, 0), -1, -1));
+        panel1.setLayout(new GridLayoutManager(4, 1, new Insets(0, 0, 0, 0), -1, -1));
         root.add(panel1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         convertGlbToPkButton = new JButton();
         convertGlbToPkButton.setText("Convert .glb to .pk");
@@ -88,11 +92,16 @@ public class ConverterGui {
         label1.setText("Convert .glb files into Pixel Asset (.pk) Files");
         panel1.add(label1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JPanel panel2 = new JPanel();
-        panel2.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
-        panel1.add(panel2, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        panel2.setLayout(new GridLayoutManager(2, 1, new Insets(0, 0, 0, 0), -1, -1));
+        panel1.add(panel2, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         status = new JLabel();
         status.setText("Status: Waiting");
-        panel2.add(status, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        panel2.add(status, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        progress = new JProgressBar();
+        progress.setOrientation(0);
+        progress.setStringPainted(true);
+        progress.setValue(0);
+        panel2.add(progress, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
     }
 
     /**
