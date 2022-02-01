@@ -20,6 +20,7 @@ public class ConverterGui {
     private JProgressBar progress;
     private JButton convertGlbToPkButton;
     private JLabel status;
+    private final boolean bulkConversion = false; // TODO: experimental. May result in smaller sizes but can be a pain to deal with.
 
     public ConverterGui() {
         try {
@@ -40,17 +41,21 @@ public class ConverterGui {
 
                 @Override
                 protected String doInBackground() {
-                    for (int i = 0; i < inputFiles.size(); i++) {
-                        String originalInputFile = inputFiles.get(i);
-                        String inputFile = originalInputFile.replace(GLB_EXTENSION, "");
-                        Path inPath = Paths.get(inputFile + GLB_EXTENSION);
-                        Path outPath = Paths.get(inputFile.replace("input", "output") + PIXEL_ASSET_EXTENSION);
+                    if (bulkConversion) {
+                        PixelConverter.bulkConvertToPk(INPUT_FOLDER, OUTPUT_FOLDER.resolve("assets.pk"));
+                    } else {
+                        for (int i = 0; i < inputFiles.size(); i++) {
+                            String originalInputFile = inputFiles.get(i);
+                            String inputFile = originalInputFile.replace(GLB_EXTENSION, "");
+                            Path inPath = Paths.get(inputFile + GLB_EXTENSION);
+                            Path outPath = Paths.get(inputFile.replace("input", "output") + PIXEL_ASSET_EXTENSION);
 
-                        System.out.println("Processing file " + inPath);
-                        updateStatus("Processing " + inputFile);
-                        progress.setValue(i / inputFiles.size() * 100);
+                            System.out.println("Processing file " + inPath);
+                            updateStatus("Processing " + inputFile);
+                            progress.setValue(i / inputFiles.size() * 100);
 
-                        PixelConverter.convertToPk(inPath, outPath);
+                            PixelConverter.convertToPk(inPath, outPath);
+                        }
                     }
 
                     updateStatus("Finished!");
@@ -111,4 +116,5 @@ public class ConverterGui {
     public JComponent $$$getRootComponent$$$() {
         return root;
     }
+
 }
