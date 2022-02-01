@@ -4,10 +4,11 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 plugins {
     java
     id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("maven-publish")
 }
 
 group = "cf.hydos"
-version = "1.0-SNAPSHOT"
+version = "1.2-SNAPSHOT"
 val rootPkg = "cf.hydos.pixelmonassetutils"
 
 val lwjglNatives = when (OperatingSystem.current()) {
@@ -74,5 +75,21 @@ tasks {
 
     build {
         dependsOn(shadowJar)
+    }
+
+    publishToMavenLocal {
+        dependsOn(shadowJar)
+    }
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            artifact(tasks["shadowJar"])
+        }
+    }
+
+    repositories {
+        mavenLocal()
     }
 }

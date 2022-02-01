@@ -35,15 +35,16 @@ public class ConverterGui {
     private void convertFiles() {
         updateStatus("Starting");
         try {
-            List<String> inputFiles = Files.find(INPUT_FOLDER, 24, (path, basicFileAttributes) -> path.toString().endsWith(GLB_EXTENSION)).map(path -> path.toString().replace(GLB_EXTENSION, "").replace("input/", "")).toList();
+            List<String> inputFiles = Files.find(INPUT_FOLDER, 24, (path, basicFileAttributes) -> path.toString().endsWith(GLB_EXTENSION)).map(path -> path.toString().replace("input/", "")).toList();
             new SwingWorker<String, String>() {
 
                 @Override
                 protected String doInBackground() {
                     for (int i = 0; i < inputFiles.size(); i++) {
-                        String inputFile = inputFiles.get(i);
-                        Path inPath = INPUT_FOLDER.resolve(inputFile + GLB_EXTENSION);
-                        Path outPath = OUTPUT_FOLDER.resolve(inputFile + PIXEL_ASSET_EXTENSION);
+                        String originalInputFile = inputFiles.get(i);
+                        String inputFile = originalInputFile.replace(GLB_EXTENSION, "");
+                        Path inPath = Paths.get(inputFile + GLB_EXTENSION);
+                        Path outPath = Paths.get(inputFile.replace("input", "output") + PIXEL_ASSET_EXTENSION);
 
                         System.out.println("Processing file " + inPath);
                         updateStatus("Processing " + inputFile);

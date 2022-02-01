@@ -23,6 +23,7 @@ public class PixelConverter {
     public static void convertToPk(Path glbFile, Path output) {
         try {
             if (!Files.exists(output)) {
+                Files.createDirectories(output.getParent());
                 Files.createFile(output);
             }
 

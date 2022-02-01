@@ -28,7 +28,16 @@ public class PixelAsset {
 
         try {
             TarFile tarFile = getTarFile(path);
-            this.scene = findFormat(getTarFile(path)).reader.read(tarFile);
+            this.scene = findFormat(tarFile).reader.read(tarFile);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load scene", e);
+        }
+    }
+
+    public PixelAsset(InputStream stream) {
+        try {
+            TarFile tarFile = getTarFile(stream);
+            this.scene = findFormat(tarFile).reader.read(tarFile);
         } catch (IOException e) {
             throw new RuntimeException("Failed to load scene", e);
         }
@@ -53,7 +62,15 @@ public class PixelAsset {
 
     private TarFile getTarFile(Path path) {
         try {
-            InputStream unlockedInputStream = unlockArchive(Files.newInputStream(path).readAllBytes());
+            return getTarFile(Files.newInputStream(path));
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read file.", e);
+        }
+    }
+
+    private TarFile getTarFile(InputStream inputStream) {
+        try {
+            InputStream unlockedInputStream = unlockArchive(inputStream.readAllBytes());
             XZInputStream xzInputStream = new XZInputStream(unlockedInputStream);
             return new TarFile(xzInputStream.readAllBytes());
         } catch (IOException e) {
