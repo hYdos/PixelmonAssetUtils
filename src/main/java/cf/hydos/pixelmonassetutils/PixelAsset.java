@@ -22,8 +22,8 @@ public class PixelAsset {
     public final Scene scene;
 
     public PixelAsset(Path path) {
-        if (!path.getFileName().toString().endsWith(".pa")) {
-            System.err.println("It is recommended you name all Pixelmon Asset files with .pa");
+        if (!path.getFileName().toString().endsWith(ConverterGui.PIXELMON_ASSET_EXTENSION)) {
+            System.err.println("It is recommended you name all Pixelmon Asset files with .pk");
         }
 
         try {
@@ -31,6 +31,22 @@ public class PixelAsset {
             this.scene = findFormat(tarFile).reader.read(tarFile);
         } catch (IOException e) {
             throw new RuntimeException("Failed to load scene", e);
+        }
+    }
+
+    public static void reverseAsset(Path original, Path result) {
+        if (!original.getFileName().toString().endsWith(ConverterGui.PIXELMON_ASSET_EXTENSION)) {
+            System.err.println("It is recommended you name all Pixelmon Asset files with .pk");
+        }
+
+        TarFile tarFile = getTarFile(original);
+        for (TarArchiveEntry entry : tarFile.getEntries()) {
+            try {
+                byte[] bytes = tarFile.getInputStream(entry).readAllBytes();
+                Files.write(result, bytes);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to reverse file.", e);
+            }
         }
     }
 
@@ -60,7 +76,7 @@ public class PixelAsset {
         return type;
     }
 
-    private TarFile getTarFile(Path path) {
+    private static TarFile getTarFile(Path path) {
         try {
             return getTarFile(Files.newInputStream(path));
         } catch (IOException e) {
@@ -68,7 +84,7 @@ public class PixelAsset {
         }
     }
 
-    private TarFile getTarFile(InputStream inputStream) {
+    private static TarFile getTarFile(InputStream inputStream) {
         try {
             InputStream unlockedInputStream = unlockArchive(inputStream.readAllBytes());
             XZInputStream xzInputStream = new XZInputStream(unlockedInputStream);
@@ -89,7 +105,7 @@ public class PixelAsset {
     /**
      * We change 1 bit to make file readers fail to load the file or find its format. I would rather not have reforged digging through the assets, honestly.
      */
-    private InputStream unlockArchive(byte[] originalBytes) {
+    private static InputStream unlockArchive(byte[] originalBytes) {
         System.arraycopy(XZ.HEADER_MAGIC, 0, originalBytes, 0, XZ.HEADER_MAGIC.length);
         return new ByteArrayInputStream(originalBytes);
     }

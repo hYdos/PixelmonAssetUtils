@@ -13,14 +13,13 @@ import java.util.List;
 
 public class ConverterGui {
     private static final String GLB_EXTENSION = ".glb";
-    private static final String PIXEL_ASSET_EXTENSION = ".pk";
+    public static final String PIXELMON_ASSET_EXTENSION = ".pk";
     private static final Path INPUT_FOLDER = Paths.get("input");
     private static final Path OUTPUT_FOLDER = Paths.get("output");
     public JPanel root;
     private JProgressBar progress;
     private JButton convertGlbToPkButton;
     private JLabel status;
-    private final boolean bulkConversion = false; // TODO: experimental. May result in smaller sizes but can be a pain to deal with.
 
     public ConverterGui() {
         try {
@@ -30,31 +29,35 @@ public class ConverterGui {
             throw new RuntimeException("Failed to create in/out folders.", e);
         }
 
-        this.convertGlbToPkButton.addActionListener(e -> this.convertFiles());
+        this.convertGlbToPkButton.addActionListener(e -> {
+            try {
+                this.convertFiles(Files.walk(INPUT_FOLDER).anyMatch(path -> path.toString().endsWith(".pk")));
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
     }
 
-    private void convertFiles() {
+    private void convertFiles(boolean reverse) {
         updateStatus("Starting");
         try {
-            List<String> inputFiles = Files.find(INPUT_FOLDER, 24, (path, basicFileAttributes) -> path.toString().endsWith(GLB_EXTENSION)).map(path -> path.toString().replace("input/", "")).toList();
+            List<Path> inputFiles = Files.walk(INPUT_FOLDER).filter(Files::isRegularFile).toList();
             new SwingWorker<String, String>() {
 
                 @Override
                 protected String doInBackground() {
-                    if (bulkConversion) {
-                        PixelConverter.bulkConvertToPk(INPUT_FOLDER, OUTPUT_FOLDER.resolve("assets.pk"));
-                    } else {
-                        for (int i = 0; i < inputFiles.size(); i++) {
-                            String originalInputFile = inputFiles.get(i);
-                            String inputFile = originalInputFile.replace(GLB_EXTENSION, "");
-                            Path inPath = Paths.get(inputFile + GLB_EXTENSION);
-                            Path outPath = Paths.get(inputFile.replace("input", "output") + PIXEL_ASSET_EXTENSION);
+                    for (int i = 0; i < inputFiles.size(); i++) {
+                        Path inputFile = inputFiles.get(i);
+                        String inputFileName = inputFile.toAbsolutePath().toString().replace(GLB_EXTENSION, "").replace(PIXELMON_ASSET_EXTENSION, "");
+                        Path outPath = Paths.get(inputFileName.replace("input", "output") + (reverse ? GLB_EXTENSION : PIXELMON_ASSET_EXTENSION));
+                        System.out.println("Processing file " + inputFile);
+                        updateStatus("Processing " + inputFile);
+                        progress.setValue(i / inputFiles.size() * 100);
 
-                            System.out.println("Processing file " + inPath);
-                            updateStatus("Processing " + inputFile);
-                            progress.setValue(i / inputFiles.size() * 100);
-
-                            PixelConverter.convertToPk(inPath, outPath);
+                        if (!reverse) {
+                            PixelConverter.convertToPk(inputFile, outPath);
+                        } else {
+                            PixelAsset.reverseAsset(inputFiles.get(i), outPath);
                         }
                     }
 
