@@ -9,7 +9,7 @@ plugins {
 
 group = "cf.hydos"
 version = "1.2-SNAPSHOT"
-val rootPkg = "cf.hydos.pixelmonassetutils"
+val rootPkg = "$group.pixelmonassetutils"
 
 val lwjglNatives = when (OperatingSystem.current()) {
     OperatingSystem.LINUX -> System.getProperty("os.arch").let {
@@ -26,12 +26,14 @@ val lwjglNatives = when (OperatingSystem.current()) {
 
 repositories {
     mavenCentral()
+    maven("https://jitpack.io")
 }
 
 dependencies {
     implementation("org.tukaani", "xz", "1.9")
     implementation("org.apache.commons", "commons-compress", "1.21")
     implementation("org.joml", "joml", "1.10.3")
+    implementation("com.github.thecodewarrior", "BinarySMD", "d10a00b720")
     implementation("com.intellij", "forms_rt", "7.0.3")
 
     implementation(platform("org.lwjgl:lwjgl-bom:3.3.0"))

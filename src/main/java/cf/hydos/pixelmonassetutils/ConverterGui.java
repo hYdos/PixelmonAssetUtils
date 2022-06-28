@@ -2,6 +2,14 @@ package cf.hydos.pixelmonassetutils;
 
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
+import dev.thecodewarrior.binarysmd.formats.SMDBinaryReader;
+import dev.thecodewarrior.binarysmd.formats.SMDBinaryWriter;
+import dev.thecodewarrior.binarysmd.formats.SMDTextReader;
+import dev.thecodewarrior.binarysmd.formats.SMDTextWriter;
+import dev.thecodewarrior.binarysmd.studiomdl.SMDFile;
+import org.msgpack.core.MessagePack;
+import org.msgpack.core.MessagePacker;
+import org.msgpack.core.MessageUnpacker;
 
 import javax.swing.*;
 import java.awt.*;
@@ -14,6 +22,8 @@ import java.util.List;
 public class ConverterGui {
     private static final String GLB_EXTENSION = ".glb";
     public static final String PIXELMON_ASSET_EXTENSION = ".pk";
+    public static final String SOURCE_MODEL_X_EXTENSION = ".smdx";
+    public static final String SOURCE_MODEL_EXTENSION = ".smd";
     private static final Path INPUT_FOLDER = Paths.get("input");
     private static final Path OUTPUT_FOLDER = Paths.get("output");
     public JPanel root;
@@ -29,16 +39,10 @@ public class ConverterGui {
             throw new RuntimeException("Failed to create in/out folders.", e);
         }
 
-        this.convertGlbToPkButton.addActionListener(e -> {
-            try {
-                this.convertFiles(Files.walk(INPUT_FOLDER).anyMatch(path -> path.toString().endsWith(".pk")));
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
-        });
+        this.convertGlbToPkButton.addActionListener(e -> this.convertFiles());
     }
 
-    private void convertFiles(boolean reverse) {
+    private void convertFiles() {
         updateStatus("Starting");
         try {
             List<Path> inputFiles = Files.walk(INPUT_FOLDER).filter(Files::isRegularFile).toList();
@@ -48,16 +52,21 @@ public class ConverterGui {
                 protected String doInBackground() {
                     for (int i = 0; i < inputFiles.size(); i++) {
                         Path inputFile = inputFiles.get(i);
-                        String inputFileName = inputFile.toAbsolutePath().toString().replace(GLB_EXTENSION, "").replace(PIXELMON_ASSET_EXTENSION, "");
-                        Path outPath = Paths.get(inputFileName.replace("input", "output") + (reverse ? GLB_EXTENSION : PIXELMON_ASSET_EXTENSION));
+                        String rawAbsolutePath = inputFile.toAbsolutePath().toString();
+                        String extension = rawAbsolutePath.substring(rawAbsolutePath.lastIndexOf("."));
                         System.out.println("Processing file " + inputFile);
                         updateStatus("Processing " + inputFile);
                         progress.setValue(i / inputFiles.size() * 100);
 
-                        if (!reverse) {
-                            PixelConverter.convertToPk(inputFile, outPath);
-                        } else {
-                            PixelAsset.reverseAsset(inputFiles.get(i), outPath);
+                        switch (extension) {
+                            case GLB_EXTENSION ->
+                                    PixelConverter.convertToPk(inputFile, getOutputPath(inputFile, GLB_EXTENSION, PIXELMON_ASSET_EXTENSION));
+                            case PIXELMON_ASSET_EXTENSION ->
+                                    PixelAsset.reverseAsset(inputFile, getOutputPath(inputFile, PIXELMON_ASSET_EXTENSION, GLB_EXTENSION));
+                            case SOURCE_MODEL_X_EXTENSION ->
+                                    convertFromLegacySmdx(inputFile, getOutputPath(inputFile, SOURCE_MODEL_X_EXTENSION, SOURCE_MODEL_EXTENSION));
+                            case SOURCE_MODEL_EXTENSION ->
+                                    convertFromLegacySmd(inputFile, getOutputPath(inputFile, SOURCE_MODEL_EXTENSION, SOURCE_MODEL_X_EXTENSION));
                         }
                     }
 
@@ -67,6 +76,33 @@ public class ConverterGui {
             }.execute();
         } catch (IOException e) {
             throw new RuntimeException("Failed to loop over input files.", e);
+        }
+    }
+
+    private Path getOutputPath(Path inputFile, String extensionFrom, String extensionTo) {
+        String rawAbsolutePath = inputFile.toAbsolutePath().toString();
+        return Paths.get(rawAbsolutePath.replace(extensionFrom, extensionTo));
+    }
+
+    private void convertFromLegacySmdx(Path input, Path output) {
+        try {
+            try (MessageUnpacker packer = MessagePack.newDefaultUnpacker(Files.newInputStream(input))) {
+                SMDFile parsed = new SMDBinaryReader().read(packer);
+                Files.writeString(output, new SMDTextWriter().write(parsed));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to convert smdx to smd", e);
+        }
+    }
+
+    private void convertFromLegacySmd(Path input, Path output) {
+        try {
+            SMDFile parsed = new SMDTextReader().read(Files.readString(input));
+            try (MessagePacker packer = MessagePack.newDefaultPacker(Files.newOutputStream(output))) {
+                new SMDBinaryWriter().write(parsed, packer);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to convert smd to smdx", e);
         }
     }
 
@@ -95,7 +131,7 @@ public class ConverterGui {
         panel1.setLayout(new GridLayoutManager(4, 1, new Insets(0, 0, 0, 0), -1, -1));
         root.add(panel1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         convertGlbToPkButton = new JButton();
-        convertGlbToPkButton.setText("Convert .glb to .pk");
+        convertGlbToPkButton.setText("Convert models (glb <-> pk & smdx <-> smd)");
         panel1.add(convertGlbToPkButton, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JLabel label1 = new JLabel();
         label1.setText("Convert .glb files into Pixel Asset (.pk) Files");

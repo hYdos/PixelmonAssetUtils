@@ -34,7 +34,7 @@ public class PixelAsset {
         }
     }
 
-    public static void reverseAsset(Path original, Path result) {
+    public static void reverseAsset(Path original, Path output) {
         if (!original.getFileName().toString().endsWith(ConverterGui.PIXELMON_ASSET_EXTENSION)) {
             System.err.println("It is recommended you name all Pixelmon Asset files with .pk");
         }
@@ -43,7 +43,7 @@ public class PixelAsset {
         for (TarArchiveEntry entry : tarFile.getEntries()) {
             try {
                 byte[] bytes = tarFile.getInputStream(entry).readAllBytes();
-                Files.write(result, bytes);
+                Files.write(output, bytes);
             } catch (IOException e) {
                 throw new RuntimeException("Failed to reverse file.", e);
             }
